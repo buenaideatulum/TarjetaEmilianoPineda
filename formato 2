@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conectando con WhatsApp...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body, html { margin:0; padding:0; overflow:hidden; font-family: Arial, sans-serif; background:#fff; }
+  canvas { display:block; position:absolute; top:0; left:0; }
+  .content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #25d366;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+<canvas id="liquid"></canvas>
+<div class="content" id="whatsapp">
+  <h2>Conectando con WhatsApp...</h2>
+  <p>Si no abre automáticamente, toca el botón:</p>
+  <a class="btn" href="https://wa.me/5219843095215?text=Hola%20me%20interesa%20más%20información%20sobre%20los%20paquetes">Abrir WhatsApp</a>
+</div>
+
+<script>
+const canvas = document.getElementById('liquid');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Configuración líquido
+let liquidY = canvas.height;
+const waveAmplitude = 50;
+const waveFrequency = 0.02;
+const speed = 12; // sube rápido
+
+// Partículas de reflejo rojo
+let redParticles = [];
+
+function drawLiquid(time) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Fondo blanco
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Líquido negro con ondas y “salpicaduras”
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height);
+
+  for(let x=0; x<=canvas.width; x+=2){
+    let y = liquidY + Math.sin(x*waveFrequency + time*0.05)*waveAmplitude;
+    // deformación aleatoria tipo tinta viva
+    y += Math.sin(x*0.1 + time*0.1)*5;
+    ctx.lineTo(x, y);
+  }
+
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.closePath();
+  ctx.fill();
+
+  // Subida rápida
+  liquidY -= speed;
+  if(liquidY < 0) liquidY = 0;
+
+  // Agregar partículas rojas aleatorias
+  if(Math.random() < 0.05){
+    redParticles.push({
+      x: Math.random()*canvas.width,
+      y: liquidY + Math.random()*waveAmplitude,
+      alpha: 0.6 + Math.random()*0.4,
+      size: 2 + Math.random()*3,
+      vy: 0.5 + Math.random()
+    });
+  }
+
+  // Dibujar partículas rojas
+  for(let i = redParticles.length-1; i>=0; i--){
+    let p = redParticles[i];
+    ctx.fillStyle = `rgba(255,0,0,${p.alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.fill();
+    p.y -= p.vy;
+    p.alpha -= 0.01;
+    if(p.alpha <= 0) redParticles.splice(i,1);
+  }
+
+  // Mostrar contenido cuando líquido sube
+  const content = document.getElementById('whatsapp');
+  if(liquidY < canvas.height*0.7){
+    content.style.opacity = 1;
+  }
+
+  requestAnimationFrame(() => drawLiquid(time + 1));
+}
+
+drawLiquid(0);
+
+// Redirección automática
+setTimeout(() => {
+  window.location.href = "https://wa.me/5219843095215?text=Hola%20me%20interesa%20más%20información%20sobre%20los%20paquetes";
+}, 2000);
+
+// Ajuste al redimensionar
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  liquidY = canvas.height;
+  redParticles = [];
+});
+</script>
+</body>
+</html>
